@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>快點 - 雲端點餐系統</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <nav class="sidebar">
+        <div class="logo">快點 Order</div>
+        <ul class="nav-links">
+            <li id="nav-order" class="active" onclick="showSection('order-section')">點餐服務</li>
+            <li id="nav-history" onclick="showSection('history-section')">點餐紀錄 <span id="cart-count">0</span></li>
+        </ul>
+    </nav>
+
+    <main class="main-content">
+        <section id="order-section" class="content-block">
+            <header>
+                <h1>商家選擇</h1>
+            </header>
+            
+            <div id="shop-container" class="shop-grid"></div>
+
+            <div id="product-view" class="hidden">
+                <button class="back-btn" onclick="backToShops()">← 返回商家</button>
+                <h2 id="current-shop-name">商家名稱</h2>
+                <div id="product-container" class="product-list"></div>
+            </div>
+        </section>
+
+        <section id="history-section" class="content-block hidden">
+            <header>
+                <h1>我的點餐紀錄</h1>
+                <p>已選擇的餐點清單</p>
+            </header>
+            <div id="history-list" class="history-container">
+                </div>
+            <div id="order-summary" class="summary-card">
+                <h3>總計：NT$ <span id="total-price">0</span></h3>
+                <button class="checkout-btn" onclick="clearOrder()">清空紀錄</button>
+            </div>
+        </section>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
