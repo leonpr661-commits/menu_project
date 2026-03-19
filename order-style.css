@@ -1,0 +1,153 @@
+/* order-style.css - 點餐頁面專用全新樣式 */
+
+:root {
+    --primary-color: #ff6b6b; /* 珊瑚紅，延用主色調 */
+    --primary-dark: #e05d5d;
+    --bg-light: #f8f9fa;
+    --text-main: #333;
+    --text-gray: #777;
+    --border-color: #eee;
+    --shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: "Microsoft JhengHei", sans-serif; }
+
+body { background-color: var(--bg-light); color: var(--text-main); min-height: 100vh; padding: 20px; }
+
+/* 頂部導航列 */
+.top-nav {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 0; margin-bottom: 20px; border-bottom: 2px solid var(--border-color);
+}
+.back-btn {
+    background: white; border: 1px solid #ddd; padding: 8px 16px;
+    border-radius: 20px; cursor: pointer; transition: 0.2s;
+}
+.back-btn:hover { background: #eee; }
+#shop-title { font-size: 24px; color: var(--text-main); }
+
+/* 主內容雙欄佈局 */
+.main-wrapper {
+    display: flex; gap: 30px;
+}
+
+/* =========================================
+   左側：菜單展示區 (約 65% 寬度)
+   ========================================= */
+.menu-section {
+    flex: 2; /* 佔用較多空間 */
+}
+
+/* 分類標題樣式 (對應 image_2.png 的紅條) */
+.menu-category {
+    font-size: 20px; color: var(--text-main); margin: 25px 0 15px;
+    padding-left: 12px; border-left: 5px solid var(--primary-color);
+    position: relative;
+}
+
+/* 網格佈局，一行兩列 (相較 image_2.png 一列更美觀) */
+.product-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 20px;
+}
+
+/* 品項卡片樣式 (優化截圖中的樣式) */
+.product-card {
+    background: white; border-radius: 12px; padding: 20px;
+    box-shadow: var(--shadow); position: relative;
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex; flex-direction: column; gap: 15px; /* 卡片內部垂直排列 */
+}
+.product-card:hover { transform: translateY(-3px); box-shadow: 0 6px 18px rgba(0,0,0,0.12); }
+
+/* 卡片上半部：品項名稱與+號 */
+.card-header { display: flex; justify-content: space-between; align-items: flex-start; }
+.product-name { font-size: 18px; font-weight: bold; color: var(--text-main); }
+.add-icon { color: var(--primary-color); font-size: 24px; font-weight: bold; cursor: pointer; }
+
+/* 卡片下半部：選擇區域 (取代彈窗) */
+.card-options {
+    background: #f9f9f9; padding: 10px; border-radius: 8px; border: 1px solid #eee;
+}
+.option-title { font-size: 12px; color: var(--text-gray); margin-bottom: 5px; }
+.option-group { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+.option-group:last-child { margin-bottom: 0; }
+
+/* 選擇按鈕樣式 (大小碗、口味) */
+.option-btn {
+    padding: 6px 14px; border: 1px solid #ddd; border-radius: 20px;
+    background: white; cursor: pointer; font-size: 14px; transition: 0.2s;
+}
+.option-btn:hover { border-color: var(--primary-color); }
+.option-btn.selected {
+    background: var(--primary-color); color: white; border-color: var(--primary-color);
+}
+
+/* 加入紀錄按鈕 (卡片底部) */
+.add-to-cart-btn {
+    width: 100%; background: var(--primary-color); color: white; border: none;
+    padding: 10px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s;
+}
+.add-to-cart-btn:hover { background: var(--primary-dark); }
+
+
+/* =========================================
+   右側：常駐點餐紀錄區 (約 35% 寬度)
+   ========================================= */
+.cart-section {
+    flex: 1; /* 佔用較少空間 */
+    position: sticky; top: 20px; height: calc(100vh - 40px); /* 滾動時固定在右側 */
+    background: white; border-radius: 15px; padding: 25px;
+    box-shadow: var(--shadow); display: flex; flex-direction: column;
+}
+
+.cart-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid var(--border-color);
+}
+.cart-title { font-size: 20px; color: var(--text-main); }
+#cart-count { background: var(--primary-color); color: white; padding: 2px 8px; border-radius: 12px; font-size: 12px; }
+
+/* 紀錄清單區域，可內部滾動 */
+.history-container {
+    flex: 1; overflow-y: auto; padding-right: 5px; margin-bottom: 15px;
+}
+.history-container::-webkit-scrollbar { width: 4px; }
+.history-container::-webkit-scrollbar-thumb { background-color: #ddd; border-radius: 2px; }
+
+/* 紀錄單項樣式 */
+.history-item {
+    background: #fcfcfc; padding: 15px; border-radius: 8px; margin-bottom: 10px;
+    display: flex; justify-content: space-between; align-items: center;
+    border: 1px solid #eee; border-left: 4px solid var(--primary-color);
+}
+.item-info { display: flex; flex-direction: column; }
+.item-name { font-weight: bold; }
+.item-details { font-size: 12px; color: var(--text-gray); margin-top: 2px; }
+.item-price { color: var(--primary-color); font-weight: bold; font-size: 16px; }
+
+/* 底部總計與按鈕 */
+.cart-summary {
+    margin-top: auto; padding-top: 15px; border-top: 2px solid var(--border-color);
+    display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;
+}
+.total-label { font-size: 16px; color: var(--text-gray); }
+.total-price-row { font-size: 24px; font-weight: bold; color: var(--primary-color); }
+
+.clear-cart-btn {
+    width: 100%; background: #2d3436; color: white; border: none;
+    padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s;
+}
+.clear-cart-btn:hover { background: #000; }
+
+
+/* RWD 回應式設計：小螢幕時改回單欄 */
+@media (max-width: 900px) {
+    .main-wrapper { flex-direction: column; }
+    .cart-section { position: relative; top: 0; height: auto; margin-top: 30px; }
+    .product-grid { grid-template-columns: 1fr; }
+}
+
+/* 隱藏彈窗樣式 (既然改為卡片內選擇，可以移除 JS 對 Modal 的調用，但 CSS 留著防錯) */
+.modal, .hidden { display: none !important; }
