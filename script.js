@@ -29,19 +29,25 @@ window.onload = () => {
 
 // --- A. 商家清單處理 (從 CSV 讀取) ---
 
+// --- A. 商家清單處理 ---
 async function loadAllMise() {
     const container = document.getElementById('shop-container');
     container.innerHTML = '載入商家中...';
 
     try {
-        // 抓取商家總表 CSV
-        const response = await fetch('/all_mise.csv');
-        if (!response.ok) throw new Error('找不到商家總表 (all_mise.csv)');
+        // 直接寫檔名，並加上時間戳記防止 GitHub 快取舊版本
+        const response = await fetch('all_mise.csv?t=' + new Date().getTime());
+        
+        if (!response.ok) throw new Error('找不到 all_mise.csv，請檢查檔案是否已上傳至 GitHub 根目錄');
         
         const text = await response.text();
-        const shops = parseCSV(text); // 使用我們寫好的解析工具
+        const shops = parseCSV(text);
         
-        // 渲染商家卡片
+        if (shops.length === 0) {
+            container.innerHTML = '<p>總表內無資料</p>';
+            return;
+        }
+
         container.innerHTML = shops.map(shop => `
             <div class="card" onclick="loadCSVMenu('${shop.id}', '${shop.name}')">
                 <h3>${shop.name}</h3>
@@ -50,12 +56,11 @@ async function loadAllMise() {
         `).join('');
         
     } catch (err) {
-        container.innerHTML = `<p style="color:red">無法載入商家列表：${err.message}</p>`;
+        container.innerHTML = `<p style="color:red">無法載入商家列表：<br>${err.message}</p>`;
     }
 }
 
-// --- B. 產品菜單處理 (從對應 ID 的 CSV 讀取) ---
-
+// --- B. 產品菜單處理 ---
 async function loadCSVMenu(shopId, shopName) {
     const container = document.getElementById('product-container');
     document.getElementById('shop-container').classList.add('hidden');
@@ -64,23 +69,18 @@ async function loadCSVMenu(shopId, shopName) {
     container.innerHTML = '讀取菜單中...';
 
     try {
-        // 這裡會動態抓取對應 ID 的 CSV (例如 R_03.csv)
-        const response = await fetch(`/${shopId}.csv`);
-        if (!response.ok) throw new Error(`找不到該店家的菜單 (${shopId}.csv)`);
+        // 同樣直接寫檔名，注意 shopId 必須與檔案名稱的大小寫完全一致
+        const response = await fetch(`${shopId}.csv?t=` + new Date().getTime());
+        
+        if (!response.ok) throw new Error(`找不到檔案 ${shopId}.csv`);
         
         const text = await response.text();
         const data = parseCSV(text);
         renderMenu(data);
     } catch (err) {
-        container.innerHTML = `
-            <div style="padding: 20px; text-align:center;">
-                <p style="color:red; margin-bottom: 10px;">目前尚無此店家的菜單資料</p>
-                <small>請確認 data/${shopId}.csv 是否存在</small>
-            </div>
-        `;
+        container.innerHTML = `<p style="color:red">載入失敗：${err.message}</p>`;
     }
 }
-
 // --- C. 核心解析工具 (CSV 轉物件) ---
 
 
