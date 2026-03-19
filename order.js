@@ -1,5 +1,5 @@
 /**
- * order.js - 點餐頁面專用邏輯 (卡片內選擇版)
+ * order.js - 最終修正版
  */
 
 // --- 1. 全域變數 ---
@@ -8,14 +8,12 @@ const urlParams = new URLSearchParams(window.location.search);
 const shopId = urlParams.get('id');
 const shopName = decodeURIComponent(urlParams.get('name') || "未知商家");
 
-// --- 2. 網頁啟動順序 ---
 window.onload = async () => {
     if (!shopId) {
-        alert("無效的商家 ID，將返回首頁");
+        alert("無效的商家 ID");
         window.location.href = 'index.html';
         return;
     }
-
     const titleElement = document.getElementById('shop-title');
     if (titleElement) titleElement.innerText = shopName;
 
@@ -23,14 +21,12 @@ window.onload = async () => {
     updateCartUI(); 
 };
 
-// --- 3. 核心工具：CSV 解析 ---
+// --- 2. CSV 解析 ---
 function parseCSV(text) {
     if (!text) return [];
     if (text.charCodeAt(0) === 0xFEFF) text = text.substring(1);
-    
     const lines = text.split(/\r?\n/).map(l => l.trim()).filter(l => l !== '');
     if (lines.length === 0) return [];
-
     const headers = lines[0].split(',').map(h => h.trim());
     return lines.slice(1).map(line => {
         const values = line.split(',').map(v => v.trim());
@@ -41,41 +37,34 @@ function parseCSV(text) {
     });
 }
 
-// --- 4. 資料抓取 ---
+// --- 3. 讀取資料 ---
 async function loadMenuData() {
     const container = document.getElementById('product-container');
     if (!container) return;
-    container.innerHTML = '<p style="padding:20px;">菜單載入中...</p>';
-
+    container.innerHTML = '<p>菜單載入中...</p>';
     try {
         const response = await fetch(`${shopId}.csv?t=${Date.now()}`);
-        if (!response.ok) throw new Error(`找不到菜單檔案: ${shopId}.csv`);
-        
+        if (!response.ok) throw new Error(`找不到檔案: ${shopId}.csv`);
         const text = await response.text();
         const items = parseCSV(text);
-        
-        if (items.length === 0) {
-            container.innerHTML = '<p>此商家目前無菜單資料</p>';
-            return;
-        }
-
         renderMenu(items);
     } catch (err) {
-        container.innerHTML = `<p style="color:red; padding:20px;">載入失敗：${err.message}</p>`;
+        container.innerHTML = `<p style="color:red">載入失敗：${err.message}</p>`;
     }
 }
 
-// --- 5. 介面渲染 (直接在卡片內生成選擇按鈕) ---
+// --- 4. 渲染菜單 ---
 function renderMenu(items) {
     const container = document.getElementById('product-container');
     container.innerHTML = '';
 
     const first = items[0];
+    // 這裡使用更強大的欄位偵測，確保各種名稱都能對應
     const kCat = Object.keys(first).find(k => k.toLowerCase().includes('category') || k.includes('分類')) || 'category';
     const kName = Object.keys(first).find(k => k.toLowerCase().includes('item_name') || k.includes('品項')) || 'item_name';
     const kBig = Object.keys(first).find(k => k.toLowerCase().includes('big')) || 'big_price';
     const kSmall = Object.keys(first).find(k => k.toLowerCase().includes('small')) || 'small_price';
-    const kOther = Object.keys(first).find(k => k.toLowerCase().includes('other') || k.includes('備註')) || 'other';
+    const kOther = Object.keys(first).find(k => k.toLowerCase().includes('other') || k.includes('備註') || k.includes('口味')) || 'other';
 
     const groups = items.reduce((acc, item) => {
         const cat = (item[kCat] || "其他").trim();
@@ -92,53 +81,44 @@ function renderMenu(items) {
         products.forEach(item => {
             if (!item[kName]) return;
 
-            // 為每個卡片建立獨立的選取狀態
+            // 建立該品項的獨立狀態
             const cardState = {
                 name: item[kName],
-                selectedSize: item[kSmall] ? '小' : '大',
-                selectedPrice: item[kSmall] || item[kBig],
-                selectedOther: "原味" 
+                selectedSize: item[kSmall] ? '小' : (item[kBig] ? '大' : '標準'),
+                selectedPrice: item[kSmall] || item[kBig] || "0",
+                selectedOther: "無" 
             };
 
             const card = document.createElement('div');
             card.className = 'product-card';
-
-            // 卡片標題
-            card.innerHTML = `
-                <div class="card-header">
-                    <span class="product-name">${cardState.name}</span>
-                    <span class="add-icon">+</span>
-                </div>
-            `;
+            card.innerHTML = `<div class="card-header"><span class="product-name">${cardState.name}</span><span class="add-icon">+</span></div>`;
 
             const optionsArea = document.createElement('div');
             optionsArea.className = 'card-options';
 
-            // 大小碗選項
-            const sizeGroup = document.createElement('div');
-            sizeGroup.className = 'option-group';
-            sizeGroup.innerHTML = `<div class="option-title">大小：</div>`;
-            if(item[kSmall]) createOptionBtnInCard(sizeGroup, '小', item[kSmall], 'size', cardState);
-            if(item[kBig]) createOptionBtnInCard(sizeGroup, '大', item[kBig], 'size', cardState);
-            optionsArea.appendChild(sizeGroup);
+            // 大小選單 (如有價格才顯示)
+            if(item[kSmall] || item[kBig]) {
+                const sizeGroup = document.createElement('div');
+                sizeGroup.className = 'option-group';
+                sizeGroup.innerHTML = `<div class="option-title">大小：</div>`;
+                if(item[kSmall]) createOptionBtnInCard(sizeGroup, '小', item[kSmall], 'size', cardState);
+                if(item[kBig]) createOptionBtnInCard(sizeGroup, '大', item[kBig], 'size', cardState);
+                optionsArea.appendChild(sizeGroup);
+            }
 
-            // 口味選項
-            const otherGroup = document.createElement('div');
-            otherGroup.className = 'option-group';
-            otherGroup.innerHTML = `<div class="option-title">口味/備註：</div>`;
+            // 口味選單
             const otherVal = item[kOther] || "";
             if(otherVal && otherVal !== "無") {
+                const otherGroup = document.createElement('div');
+                otherGroup.className = 'option-group';
+                otherGroup.innerHTML = `<div class="option-title">口味/備註：</div>`;
                 const opts = otherVal.split('/');
                 opts.forEach(o => createOptionBtnInCard(otherGroup, o, null, 'other', cardState));
-                cardState.selectedOther = opts[0]; // 預設選第一個
-            } else {
-                otherGroup.innerHTML += "<small style='color:gray'>無</small>";
-                cardState.selectedOther = "無";
+                optionsArea.appendChild(otherGroup);
             }
-            optionsArea.appendChild(otherGroup);
+            
             card.appendChild(optionsArea);
 
-            // 加入按鈕
             const addBtn = document.createElement('button');
             addBtn.className = 'add-to-cart-btn';
             addBtn.innerText = '加入紀錄';
@@ -151,44 +131,48 @@ function renderMenu(items) {
     }
 }
 
-// --- 6. 選項按鈕處理 ---
+// --- 5. 選項按鈕 (新增取消功能) ---
 function createOptionBtnInCard(container, label, price, type, state) {
     const btn = document.createElement('button');
     btn.className = 'option-btn';
-    
-    if(label === state.selectedSize || label === state.selectedOther) {
-        btn.classList.add('selected');
-    }
+    if(label === state.selectedSize) btn.classList.add('selected');
     
     btn.innerText = price ? `${label}($${price})` : label;
     
     btn.onclick = () => {
+        const isSelected = btn.classList.contains('selected');
+        
+        // 先清除同組所有按鈕選取狀態
         container.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
-        btn.classList.add('selected');
-        if(type === 'size') {
-            state.selectedSize = label;
-            state.selectedPrice = price;
+        
+        if (isSelected && type === 'other') {
+            // 如果是口味且已被選中，點第二下取消
+            state.selectedOther = "無";
         } else {
-            state.selectedOther = label;
+            // 選中當前按鈕
+            btn.classList.add('selected');
+            if(type === 'size') {
+                state.selectedSize = label;
+                state.selectedPrice = price;
+            } else {
+                state.selectedOther = label;
+            }
         }
     };
     container.appendChild(btn);
 }
 
-// --- 7. 紀錄儲存邏輯 ---
+// --- 6. 加入紀錄 (全品項相容版) ---
 function confirmOrderFromCard(state) {
-    // 檢查價格是否存在
-    if (!state.selectedPrice) {
-        alert("請先選擇大小或規格");
-        return;
-    }
+    // 確保價格是數字
+    const finalPrice = Number(state.selectedPrice) || 0;
 
     const orderItem = {
         shopName: shopName,
         name: state.name,
-        size: state.selectedSize,
-        price: state.selectedPrice,
-        other: state.selectedOther,
+        size: state.selectedSize || "標準",
+        price: finalPrice,
+        other: state.selectedOther || "無",
         time: new Date().toLocaleTimeString()
     };
 
@@ -196,10 +180,12 @@ function confirmOrderFromCard(state) {
     localStorage.setItem('myCart', JSON.stringify(myOrder));
     
     updateCartUI();
-    
-    // 加入這個提示，確認邏輯有執行到這裡
-    console.log("成功加入紀錄:", orderItem);
-    alert(`已將 ${orderItem.name} 加入紀錄！`);
+    // 加上小通知方便確認
+    const notice = document.createElement('div');
+    notice.innerText = "已加入！";
+    notice.style = "position:fixed; bottom:20px; left:50%; background:black; color:white; padding:10px 20px; border-radius:20px; transform:translateX(-50%); z-index:9999;";
+    document.body.appendChild(notice);
+    setTimeout(() => notice.remove(), 1000);
 }
 
 function updateCartUI() {
@@ -207,31 +193,27 @@ function updateCartUI() {
     if (countBadge) countBadge.innerText = myOrder.length;
 
     const list = document.getElementById('history-list');
-    if (!list) return;
+    const totalSpan = document.getElementById('total-price');
+    if (!list || !totalSpan) return;
 
     let total = 0;
-    list.innerHTML = myOrder.map((item, idx) => {
-        // 強制轉換為數字，避免出現 NaN 或字串串接
-        const price = Number(item.price) || 0;
-        total += price;
-        
+    list.innerHTML = myOrder.map((item) => {
+        total += Number(item.price);
         return `
             <div class="history-item">
                 <div class="item-info">
                     <span class="item-name">${item.name} (${item.size})</span>
                     <span class="item-details">${item.other}</span>
                 </div>
-                <div class="item-price">$${price}</div>
+                <div class="item-price">$${item.price}</div>
             </div>
         `;
     }).join('');
-
-    const totalSpan = document.getElementById('total-price');
-    if (totalSpan) totalSpan.innerText = total;
+    totalSpan.innerText = total;
 }
 
 function clearCart() {
-    if(confirm("確定要清空所有紀錄嗎？")) {
+    if(confirm("確定要清空紀錄嗎？")) {
         myOrder = [];
         localStorage.removeItem('myCart');
         updateCartUI();
