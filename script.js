@@ -109,9 +109,16 @@ function renderMenu(items) {
     const container = document.getElementById('product-container');
     container.innerHTML = '';
     
-    // 按分類群組
+    // 取得 CSV 欄位名稱 (自動相容大小寫)
+    const first = items[0] || {};
+    const keyCat = Object.keys(first).find(k => k.toLowerCase().includes('category')) || 'category';
+    const keyName = Object.keys(first).find(k => k.toLowerCase().includes('item_name')) || 'item_name';
+    const keyBig = Object.keys(first).find(k => k.toLowerCase().includes('big')) || 'big_price';
+    const keySmall = Object.keys(first).find(k => k.toLowerCase().includes('small')) || 'small_price';
+    const keyOther = Object.keys(first).find(k => k.toLowerCase().includes('other')) || 'other';
+
     const groups = items.reduce((acc, item) => {
-        const cat = item.category || "其他";
+        const cat = item[keyCat] || "其他";
         if (!acc[cat]) acc[cat] = [];
         acc[cat].push(item);
         return acc;
@@ -119,22 +126,28 @@ function renderMenu(items) {
 
     for (const [cat, products] of Object.entries(groups)) {
         container.innerHTML += `<h3 class="menu-category">${cat}</h3>`;
+        
         products.forEach(item => {
-            // 建立品項卡片
             const card = document.createElement('div');
             card.className = 'product-card';
-            card.onclick = () => openOrderModal(item); // 點擊卡片開啟彈窗
+            card.style.cursor = 'pointer'; // 讓滑鼠變成手指形狀
             
-            // 顯示價格預覽
-            let priceText = item.small_price ? `小: $${item.small_price}` : "";
-            if(item.big_price) priceText += ` / 大: $${item.big_price}`;
+            // 點擊整塊卡片觸發彈窗
+            card.onclick = () => {
+                console.log("點擊了品項:", item[keyName]); // 偵錯用
+                openOrderModal(item, keyName, keyBig, keySmall, keyOther);
+            };
+
+            const pBig = item[keyBig] ? `大: $${item[keyBig]}` : "";
+            const pSmall = item[keySmall] ? `小: $${item[keySmall]}` : "";
+            const priceInfo = [pSmall, pBig].filter(p => p).join(' / ');
 
             card.innerHTML = `
                 <div class="product-info">
-                    <span class="product-name">${item.item_name}</span>
-                    <div style="font-size:12px; color:gray;">${priceText}</div>
+                    <span class="product-name" style="font-weight:bold; font-size:1.1rem;">${item[keyName]}</span>
+                    <div style="font-size:0.85rem; color:gray; margin-top:4px;">${priceInfo}</div>
                 </div>
-                <div class="plus-icon">+</div>
+                <div class="plus-icon" style="color:#ff6b6b; font-size:1.5rem;">+</div>
             `;
             container.appendChild(card);
         });
@@ -143,49 +156,59 @@ function renderMenu(items) {
 
 // --- 彈窗控制邏輯 ---
 
-function openOrderModal(item) {
-    currentSelectItem = { 
-        ...item, 
-        selectedSize: item.small_price ? '小' : '大', // 預設選小，若無小則選大
-        selectedPrice: item.small_price || item.big_price,
-        selectedOther: "無"
+let currentSelectItem = null; 
+
+function openOrderModal(item, keyName, keyBig, keySmall, keyOther) {
+    // 初始化暫存資料
+    currentSelectItem = {
+        name: item[keyName],
+        bigPrice: item[keyBig],
+        smallPrice: item[keySmall],
+        otherStr: item[keyOther],
+        selectedSize: item[keySmall] ? '小' : '大',
+        selectedPrice: item[keySmall] || item[keyBig],
+        selectedOther: "原味/預設" 
     };
 
-    document.getElementById('modal-item-name').innerText = item.item_name;
-    const sizeArea = document.getElementById('modal-size-options');
-    const otherArea = document.getElementById('modal-other-options');
-    
-    // 1. 生成大小碗選項
-    sizeArea.innerHTML = "";
-    if(item.small_price) addOptionBtn(sizeArea, '小', item.small_price, 'size');
-    if(item.big_price) addOptionBtn(sizeArea, '大', item.big_price, 'size');
+    // 顯示名稱
+    document.getElementById('modal-item-name').innerText = currentSelectItem.name;
 
-    // 2. 生成 Other 選項 (口味/肉類)
+    // 處理大小選項
+    const sizeArea = document.getElementById('modal-size-options');
+    sizeArea.innerHTML = "";
+    if(item[keySmall]) createOptionBtn(sizeArea, '小', item[keySmall], 'size');
+    if(item[keyBig]) createOptionBtn(sizeArea, '大', item[keyBig], 'size');
+
+    // 處理其他選項 (口味)
+    const otherArea = document.getElementById('modal-other-options');
     otherArea.innerHTML = "";
-    if(item.other && item.other !== "無") {
-        const options = item.other.split('/');
-        options.forEach(opt => addOptionBtn(otherArea, opt, null, 'other'));
+    if(item[keyOther] && item[keyOther] !== "無") {
+        const opts = item[keyOther].split('/');
+        opts.forEach(opt => createOptionBtn(otherArea, opt, null, 'other'));
+        currentSelectItem.selectedOther = opts[0]; // 預設選第一個
     } else {
         otherArea.innerHTML = "<small style='color:gray'>無特殊選項</small>";
+        currentSelectItem.selectedOther = "無";
     }
 
-    document.getElementById('order-modal').classList.remove('hidden');
+    // 顯示彈窗 (移除 hidden 類別)
+    const modal = document.getElementById('order-modal');
+    modal.classList.remove('hidden');
+    modal.style.display = 'flex'; // 強制確保它是 flex 顯示
 }
 
-function addOptionBtn(container, label, price, type) {
+function createOptionBtn(container, label, price, type) {
     const btn = document.createElement('button');
     btn.className = 'option-btn';
+    if (label === currentSelectItem.selectedSize || label === currentSelectItem.selectedOther) {
+        btn.classList.add('selected');
+    }
+    
     btn.innerText = price ? `${label} ($${price})` : label;
     
-    // 預設選中邏輯
-    if(type === 'size' && label === currentSelectItem.selectedSize) btn.classList.add('selected');
-
     btn.onclick = () => {
-        // 切換按鈕樣式
         container.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
         btn.classList.add('selected');
-        
-        // 更新暫存資料
         if(type === 'size') {
             currentSelectItem.selectedSize = label;
             currentSelectItem.selectedPrice = price;
@@ -197,9 +220,10 @@ function addOptionBtn(container, label, price, type) {
 }
 
 function closeModal() {
-    document.getElementById('order-modal').classList.add('hidden');
+    const modal = document.getElementById('order-modal');
+    modal.classList.add('hidden');
+    modal.style.display = 'none';
 }
-
 function confirmOrder() {
     const item = {
         name: currentSelectItem.item_name,
