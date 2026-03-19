@@ -56,10 +56,6 @@ body { display: flex; background: var(--bg-light); min-height: 100vh; }
 .modal-footer { display: flex; justify-content: space-between; margin-top: 20px; }
 .confirm-btn { background: var(--primary-color); color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; flex: 1; margin-left: 10px; }
 .cancel-btn { background: #eee; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; }
-/* 確保 hidden 會真的消失 */
-.hidden {
-    display: none !important;
-}
 
 /* 修正 Modal 初始狀態 */
 #order-modal {
