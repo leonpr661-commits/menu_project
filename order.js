@@ -109,7 +109,7 @@ function renderMenu(items) {
             card.innerHTML = `
                 <div class="card-header">
                     <span class="product-name">${cardState.name}</span>
-                    <span class="add-icon">+</span>
+                    <span class="add-icon"></span>
                 </div>
             `;
 
