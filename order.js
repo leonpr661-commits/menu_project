@@ -204,14 +204,17 @@ function updateCartUI() {
 
     let total = 0;
     list.innerHTML = myOrder.map((item, idx) => {
-        total += parseInt(item.price || 0);
+        // 強制轉換為數字，避免出現 NaN 或字串串接
+        const price = Number(item.price) || 0;
+        total += price;
+        
         return `
             <div class="history-item">
                 <div class="item-info">
                     <span class="item-name">${item.name} (${item.size})</span>
                     <span class="item-details">${item.other}</span>
                 </div>
-                <div class="item-price">$${item.price}</div>
+                <div class="item-price">$${price}</div>
             </div>
         `;
     }).join('');
