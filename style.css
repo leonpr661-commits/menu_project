@@ -35,3 +35,24 @@ body { display: flex; background: var(--bg-light); min-height: 100vh; }
 .summary-card { margin-top: 30px; padding: 20px; background: white; border-radius: 12px; text-align: right; }
 .checkout-btn { padding: 10px 20px; background: #2d3436; color: white; border: none; border-radius: 5px; cursor: pointer; margin-top: 10px; }
 .back-btn { margin-bottom: 20px; padding: 8px 15px; cursor: pointer; }
+
+/* 彈窗背景 */
+.modal {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 1000;
+}
+/* 彈窗內容物 */
+.modal-content {
+    background: white; padding: 25px; border-radius: 15px; width: 90%; max-width: 400px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}
+.option-group { display: flex; flex-wrap: wrap; gap: 10px; margin: 15px 0; }
+/* 選項按鈕樣式 */
+.option-btn {
+    padding: 8px 15px; border: 1px solid #ddd; border-radius: 20px; cursor: pointer; background: white;
+}
+.option-btn.selected { background: var(--primary-color); color: white; border-color: var(--primary-color); }
+
+.modal-footer { display: flex; justify-content: space-between; margin-top: 20px; }
+.confirm-btn { background: var(--primary-color); color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; flex: 1; margin-left: 10px; }
+.cancel-btn { background: #eee; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; }
