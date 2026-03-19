@@ -38,19 +38,13 @@ async function loadAllMise() {
         const text = await response.text();
         const shops = parseCSV(text);
 
-        container.innerHTML = shops.map(shop => {
-            // 自動找尋名稱欄位 (不管標題是 name 還是 商家名稱)
-            const sName = shop.name || shop['商家名稱'] || Object.values(shop)[1] || "未知名稱";
-            const sAddr = shop.address || shop['地址'] || Object.values(shop)[2] || "";
-            const sId = shop.id || Object.values(shop)[0];
-
-            return `
-                <div class="card" onclick="loadCSVMenu('${sId}', '${sName}')" style="cursor:pointer;">
-                    <h3>${sName}</h3>
-                    <p style="font-size:12px; color:gray;">${sAddr}</p>
-                </div>
-            `;
-        }).join('');
+        // 修改 onclick 邏輯
+container.innerHTML = shops.map(shop => `
+    <div class="card" onclick="location.href='order.html?id=${shop.id}&name=${encodeURIComponent(shop.name)}'">
+        <h3>${shop.name}</h3>
+        <p>${shop.address}</p>
+    </div>
+`).join('');
     } catch (err) {
         container.innerHTML = `<p style="color:red">商家載入失敗：${err.message}</p>`;
     }
