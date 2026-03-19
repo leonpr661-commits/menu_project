@@ -2,17 +2,37 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>訂餐頁面</title>
+    <title>點餐頁面</title>
     <link rel="stylesheet" href="order-style.css">
 </head>
 <body>
-    <button onclick="location.href='index.html'">← 返回商家</button>
-    <h1 id="shop-title">載入中...</h1>
-    <div id="product-container"></div>
-    <span id="cart-count">0</span>
-    <div id="history-list"></div>
-    <span id="total-price">0</span>
-    <div id="order-modal" class="modal hidden">...</div>
+    <div class="top-nav">
+        <button class="back-btn" onclick="window.location.href='index.html'">← 返回商家</button>
+        <h1 id="shop-title">載入中...</h1>
+        <div></div> </div>
 
-    <script src="order.js"></script> </body>
+    <div class="main-wrapper">
+        <div class="menu-section">
+            <div id="product-container"></div> </div>
+
+        <div class="cart-section">
+            <div class="cart-header">
+                <span class="cart-title">點餐紀錄</span>
+                <span id="cart-count">0</span>
+            </div>
+            
+            <div id="history-list" class="history-container">
+                </div>
+
+            <div class="cart-summary">
+                <span class="total-label">總計</span>
+                <span class="total-price-row">$<span id="total-price">0</span></span>
+            </div>
+            
+            <button class="clear-cart-btn" onclick="clearCart()">清空紀錄</button>
+        </div>
+    </div>
+
+    <script src="order.js"></script>
+</body>
+</html>
