@@ -78,43 +78,68 @@ async function loadCSVMenu(shopId, shopName) {
 function renderMenu(items) {
     const container = document.getElementById('product-container');
     container.innerHTML = '';
-    if (items.length === 0) return;
+    
+    if (!items || items.length === 0) {
+        container.innerHTML = '<p>此店家目前無菜單資料</p>';
+        return;
+    }
 
-    // 自動找標題 Key
+    // 1. 自動找尋 Key (增加防錯)
     const first = items[0];
-    const kCat = Object.keys(first).find(k => k.includes('category') || k.includes('分類')) || 'category';
-    const kName = Object.keys(first).find(k => k.includes('item_name') || k.includes('品項')) || 'item_name';
-    const kBig = Object.keys(first).find(k => k.includes('big')) || 'big_price';
-    const kSmall = Object.keys(first).find(k => k.includes('small')) || 'small_price';
-    const kOther = Object.keys(first).find(k => k.includes('other') || k.includes('備註')) || 'other';
+    const kCat = Object.keys(first).find(k => k.toLowerCase().includes('category') || k.includes('分類')) || 'category';
+    const kName = Object.keys(first).find(k => k.toLowerCase().includes('item_name') || k.includes('品項')) || 'item_name';
+    const kBig = Object.keys(first).find(k => k.toLowerCase().includes('big')) || 'big_price';
+    const kSmall = Object.keys(first).find(k => k.toLowerCase().includes('small')) || 'small_price';
+    const kOther = Object.keys(first).find(k => k.toLowerCase().includes('other') || k.includes('備註')) || 'other';
 
+    // 2. 按分類群組 (確保不因分類名重複而壞掉)
     const groups = items.reduce((acc, item) => {
-        const cat = item[kCat] || "其他";
+        const cat = (item[kCat] || "其他").trim();
         if (!acc[cat]) acc[cat] = [];
         acc[cat].push(item);
         return acc;
     }, {});
 
+    // 3. 渲染
     for (const [cat, products] of Object.entries(groups)) {
-        container.innerHTML += `<h3 class="menu-category">${cat}</h3>`;
-        products.forEach(item => {
+        // 分類標題
+        const catTitle = document.createElement('h3');
+        catTitle.className = 'menu-category';
+        catTitle.innerText = cat;
+        container.appendChild(catTitle);
+
+        products.forEach((item, index) => {
+            // 檢查品項名稱是否存在，避免空行導致崩潰
+            if (!item[kName]) return;
+
             const card = document.createElement('div');
             card.className = 'product-card';
             card.style.cursor = 'pointer';
             
-            const bP = item[kBig];
-            const sP = item[kSmall];
-            const priceInfo = [sP ? `小$${sP}` : '', bP ? `大$${bP}` : ''].filter(p=>p).join(' / ');
+            const bP = item[kBig] ? item[kBig].trim() : "";
+            const sP = item[kSmall] ? item[kSmall].trim() : "";
+            
+            // 建立價格文字
+            let priceInfo = "";
+            if (sP && bP) priceInfo = `小$${sP} / 大$${bP}`;
+            else if (sP) priceInfo = `小$${sP}`;
+            else if (bP) priceInfo = `大$${bP}`;
 
             card.innerHTML = `
-                <div>
-                    <span class="product-name">${item[kName]}</span>
-                    <div style="font-size:12px; color:gray;">${priceInfo}</div>
+                <div class="product-info">
+                    <span class="product-name" style="display:block; font-weight:bold;">${item[kName]}</span>
+                    <div style="font-size:12px; color:gray; margin-top:4px;">${priceInfo}</div>
                 </div>
-                <div style="color:#ff6b6b; font-size:20px;">+</div>
+                <div style="color:#ff6b6b; font-size:24px; font-weight:bold;">+</div>
             `;
-            // 綁定點擊事件
-            card.onclick = () => openOrderModal(item, kName, kBig, kSmall, kOther);
+
+            // 【關鍵修正】確保每個卡片都確實綁定 onclick
+            card.onclick = (e) => {
+                e.preventDefault();
+                console.log("嘗試開啟彈窗:", item[kName]);
+                openOrderModal(item, kName, kBig, kSmall, kOther);
+            };
+
             container.appendChild(card);
         });
     }
