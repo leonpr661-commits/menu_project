@@ -1,65 +1,88 @@
 :root {
     --primary-color: #ff6b6b;
     --sidebar-bg: #2d3436;
-    --bg-light: #f9f9f9;
+    --bg-light: #f4f7f6;
 }
 
-* { margin: 0; padding: 0; box-sizing: border-box; font-family: sans-serif; }
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: "Microsoft JhengHei", sans-serif; }
 
 body { display: flex; background: var(--bg-light); min-height: 100vh; }
 
 /* 側邊欄 */
-.sidebar { width: 220px; background: var(--sidebar-bg); color: white; padding: 20px; position: fixed; height: 100vh; }
+.sidebar { 
+    width: 220px; background: var(--sidebar-bg); color: white; 
+    padding: 20px; position: fixed; height: 100vh; z-index: 100;
+}
 .logo { font-size: 24px; font-weight: bold; color: var(--primary-color); margin-bottom: 40px; }
-.nav-links li { padding: 15px; cursor: pointer; border-radius: 8px; margin-bottom: 10px; list-style: none; transition: 0.3s; }
+.nav-links li { 
+    padding: 15px; cursor: pointer; border-radius: 8px; margin-bottom: 10px; 
+    list-style: none; transition: 0.3s; 
+}
 .nav-links li.active { background: var(--primary-color); }
-#cart-count { background: white; color: var(--primary-color); padding: 2px 8px; border-radius: 10px; font-size: 12px; margin-left: 5px; }
 
-/* 主內容 */
-.main-content { margin-left: 220px; width: 100%; padding: 40px; }
-.hidden { display: none !important; }
+/* 主內容區 */
+.main-content { 
+    margin-left: 220px; /* 必須等於 sidebar 寬度 */
+    width: calc(100% - 220px); 
+    padding: 40px; 
+    position: relative;
+}
 
-/* 商家與產品卡片 */
-.shop-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
-.card, .product-card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-.card:hover { border: 2px solid var(--primary-color); cursor: pointer; }
+/* 商家卡片網格 */
+.shop-grid { 
+    display: grid; 
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); 
+    gap: 20px; 
+    min-height: 100px; /* 確保容器有高度 */
+}
 
-.menu-category { margin: 25px 0 10px; color: #555; border-left: 5px solid var(--primary-color); padding-left: 10px; }
+.card { 
+    background: white; padding: 25px; border-radius: 12px; 
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05); cursor: pointer;
+    transition: transform 0.2s; border: 2px solid transparent;
+}
+.card:hover { transform: translateY(-5px); border-color: var(--primary-color); }
 
-.product-card { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-.order-btn { padding: 8px 15px; background: #f0f0f0; border: none; border-radius: 20px; cursor: pointer; margin-left: 5px; }
-.order-btn:hover { background: var(--primary-color); color: white; }
+/* 菜單顯示區 */
+.product-list { margin-top: 20px; }
+.product-card { 
+    background: white; padding: 15px 20px; border-radius: 10px; 
+    margin-bottom: 12px; display: flex; justify-content: space-between; 
+    align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+.menu-category { margin: 30px 0 10px; border-left: 5px solid var(--primary-color); padding-left: 12px; }
 
-/* 紀錄區樣式 */
-.history-item { background: white; padding: 15px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; border-left: 4px solid var(--primary-color); }
-.summary-card { margin-top: 30px; padding: 20px; background: white; border-radius: 12px; text-align: right; }
-.checkout-btn { padding: 10px 20px; background: #2d3436; color: white; border: none; border-radius: 5px; cursor: pointer; margin-top: 10px; }
-.back-btn { margin-bottom: 20px; padding: 8px 15px; cursor: pointer; }
-
-/* 彈窗背景 */
+/* 彈窗樣式 (核心修正) */
 .modal {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 1000;
+    background: rgba(0,0,0,0.7); 
+    display: none; /* 由 JS 控制顯示 */
+    align-items: center; justify-content: center; 
+    z-index: 9999; /* 確保在最上層 */
 }
-/* 彈窗內容物 */
 .modal-content {
-    background: white; padding: 25px; border-radius: 15px; width: 90%; max-width: 400px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    background: white; padding: 30px; border-radius: 15px; 
+    width: 90%; max-width: 450px; position: relative;
 }
 .option-group { display: flex; flex-wrap: wrap; gap: 10px; margin: 15px 0; }
-/* 選項按鈕樣式 */
 .option-btn {
-    padding: 8px 15px; border: 1px solid #ddd; border-radius: 20px; cursor: pointer; background: white;
+    padding: 10px 18px; border: 1px solid #ddd; border-radius: 25px; 
+    background: white; cursor: pointer; transition: 0.2s;
 }
-.option-btn.selected { background: var(--primary-color); color: white; border-color: var(--primary-color); }
-
-.modal-footer { display: flex; justify-content: space-between; margin-top: 20px; }
-.confirm-btn { background: var(--primary-color); color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; flex: 1; margin-left: 10px; }
-.cancel-btn { background: #eee; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; }
-
-/* 修正 Modal 初始狀態 */
-#order-modal {
-    display: none; /* 預設不顯示 */
+.option-btn.selected { 
+    background: var(--primary-color); color: white; border-color: var(--primary-color); 
 }
 
-/* 當 modal 不是 hidden 時，透過 JS 改成 flex */
+/* 點餐紀錄樣式 */
+.history-item { 
+    background: white; padding: 15px; border-radius: 10px; 
+    margin-bottom: 10px; display: flex; justify-content: space-between;
+    border-left: 4px solid var(--primary-color);
+}
+
+/* 通用控制 */
+.hidden { display: none !important; }
+.back-btn { 
+    background: #ddd; border: none; padding: 8px 15px; 
+    border-radius: 5px; cursor: pointer; margin-bottom: 20px; 
+}
