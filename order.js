@@ -177,6 +177,12 @@ function createOptionBtnInCard(container, label, price, type, state) {
 
 // --- 7. 紀錄儲存邏輯 ---
 function confirmOrderFromCard(state) {
+    // 檢查價格是否存在
+    if (!state.selectedPrice) {
+        alert("請先選擇大小或規格");
+        return;
+    }
+
     const orderItem = {
         shopName: shopName,
         name: state.name,
@@ -191,8 +197,9 @@ function confirmOrderFromCard(state) {
     
     updateCartUI();
     
-    // 簡單的視覺回饋替代 alert
-    console.log("已加入:", orderItem.name);
+    // 加入這個提示，確認邏輯有執行到這裡
+    console.log("成功加入紀錄:", orderItem);
+    alert(`已將 ${orderItem.name} 加入紀錄！`);
 }
 
 function updateCartUI() {
