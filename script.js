@@ -2,22 +2,22 @@
 let myOrder = [];
 
 function parseCSV(text) {
-    // 使用正則表達式處理各種換行符號
+    // 【關鍵指令 2】使用正則表達式切分換行，相容 Windows 與 Mac/Linux
     const lines = text.split(/\r?\n/).map(l => l.trim()).filter(l => l !== '');
     if (lines.length === 0) return [];
     
-    // 處理可能的 UTF-8 BOM 標頭 (某些 Excel 存檔會產生)
-    if (lines[0].charCodeAt(0) === 0xFEFF) {
-        lines[0] = lines[0].substring(1);
-    }
-
+    // 取得標題列 (例如: id,name,address)
     const headers = lines[0].split(',').map(h => h.trim());
+
     return lines.slice(1).map(line => {
+        // 處理每一列的內容
         const values = line.split(',').map(v => v.trim());
-        return headers.reduce((obj, header, i) => { 
+        const obj = {};
+        headers.forEach((header, i) => {
+            // 將內容塞入對應的中文或英文標題下
             obj[header] = values[i] || ""; 
-            return obj; 
-        }, {});
+        });
+        return obj;
     });
 }
 
@@ -61,24 +61,24 @@ async function loadAllMise() {
 }
 
 // --- B. 產品菜單處理 ---
-async function loadCSVMenu(shopId, shopName) {
-    const container = document.getElementById('product-container');
-    document.getElementById('shop-container').classList.add('hidden');
-    document.getElementById('product-view').classList.remove('hidden');
-    document.getElementById('current-shop-name').innerText = shopName;
-    container.innerHTML = '讀取菜單中...';
-
+// 讀取 CSV 並處理中文編碼
+async function loadCSVData(fileName) {
     try {
-        // 同樣直接寫檔名，注意 shopId 必須與檔案名稱的大小寫完全一致
-        const response = await fetch(`${shopId}.csv?t=` + new Date().getTime());
-        
-        if (!response.ok) throw new Error(`找不到檔案 ${shopId}.csv`);
-        
-        const text = await response.text();
-        const data = parseCSV(text);
-        renderMenu(data);
+        const response = await fetch(fileName + '?t=' + new Date().getTime());
+        if (!response.ok) throw new Error('找不到檔案');
+
+        // 讀取原始文字
+        let text = await response.text();
+
+        // 【關鍵指令 1】移除 UTF-8 的 BOM 標頭 (防止中文欄位名稱解析錯誤)
+        if (text.charCodeAt(0) === 0xFEFF) {
+            text = text.substring(1);
+        }
+
+        return parseCSV(text);
     } catch (err) {
-        container.innerHTML = `<p style="color:red">載入失敗：${err.message}</p>`;
+        console.error("讀取失敗:", err);
+        return [];
     }
 }
 // --- C. 核心解析工具 (CSV 轉物件) ---
