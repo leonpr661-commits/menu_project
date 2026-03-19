@@ -44,6 +44,23 @@
             </div>
         </section>
     </main>
+    <div id="order-modal" class="modal hidden">
+    <div class="modal-content">
+        <h2 id="modal-item-name">品項名稱</h2>
+        <hr>
+        <div class="modal-body">
+            <p><strong>選擇大小：</strong></p>
+            <div id="modal-size-options" class="option-group"></div>
+            
+            <p><strong>其他需求/口味：</strong></p>
+            <div id="modal-other-options" class="option-group"></div>
+        </div>
+        <div class="modal-footer">
+            <button class="cancel-btn" onclick="closeModal()">取消</button>
+            <button class="confirm-btn" onclick="confirmOrder()">加入紀錄</button>
+        </div>
+    </div>
+</div>
 
     <script src="script.js"></script>
 </body>
