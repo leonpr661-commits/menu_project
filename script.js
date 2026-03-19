@@ -32,34 +32,25 @@ window.onload = () => {
 // --- A. 商家清單處理 ---
 async function loadAllMise() {
     const container = document.getElementById('shop-container');
-    container.innerHTML = '載入商家中...';
+    
+    // 1. 抓取檔案
+    const response = await fetch('all_mise.csv');
+    let text = await response.text();
 
-    try {
-        // 直接寫檔名，並加上時間戳記防止 GitHub 快取舊版本
-        const response = await fetch('all_mise.csv?t=' + new Date().getTime());
-        
-        if (!response.ok) throw new Error('找不到 all_mise.csv，請檢查檔案是否已上傳至 GitHub 根目錄');
-        
-        const text = await response.text();
-        const shops = parseCSV(text);
-        
-        if (shops.length === 0) {
-            container.innerHTML = '<p>總表內無資料</p>';
-            return;
-        }
+    // 2. 處理 BOM 標頭 (處理中文必備)
+    if (text.startsWith('\uFEFF')) text = text.substring(1);
 
-        container.innerHTML = shops.map(shop => `
-            <div class="card" onclick="loadCSVMenu('${shop.id}', '${shop.name}')">
-                <h3>${shop.name}</h3>
-                <p style="font-size:12px; color:gray;">${shop.address}</p>
-            </div>
-        `).join('');
-        
-    } catch (err) {
-        container.innerHTML = `<p style="color:red">無法載入商家列表：<br>${err.message}</p>`;
-    }
+    // 3. 解析
+    const shops = parseCSV(text);
+
+    // 4. 呈現 (中文名稱會正確顯示)
+    container.innerHTML = shops.map(shop => `
+        <div class="card" onclick="loadCSVMenu('${shop.id}', '${shop.name}')">
+            <h3>${shop.name}</h3>
+            <p>${shop.address}</p>
+        </div>
+    `).join('');
 }
-
 // --- B. 產品菜單處理 ---
 // 讀取 CSV 並處理中文編碼
 async function loadCSVData(fileName) {
