@@ -29,7 +29,7 @@ async function loadAllMise() {
 
     try {
         // 抓取商家總表 CSV
-        const response = await fetch('./data/all_mise.csv');
+        const response = await fetch('./all_mise.csv');
         if (!response.ok) throw new Error('找不到商家總表 (all_mise.csv)');
         
         const text = await response.text();
@@ -59,7 +59,7 @@ async function loadCSVMenu(shopId, shopName) {
 
     try {
         // 這裡會動態抓取對應 ID 的 CSV (例如 R_03.csv)
-        const response = await fetch(`./data/${shopId}.csv`);
+        const response = await fetch(`./${shopId}.csv`);
         if (!response.ok) throw new Error(`找不到該店家的菜單 (${shopId}.csv)`);
         
         const text = await response.text();
