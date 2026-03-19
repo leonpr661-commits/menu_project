@@ -248,3 +248,15 @@ function clearCart() {
         updateCartUI();
     }
 }
+// 在 order.js 加入這段來顯示紀錄
+function displayHistory() {
+    const list = document.getElementById('history-list');
+    if(!list) return;
+    
+    let cart = JSON.parse(localStorage.getItem('myCart') || '[]');
+    list.innerHTML = cart.map(item => `
+        <div class="history-item">
+            <strong>${item.name}</strong> - ${item.size} ($${item.price})
+        </div>
+    `).join('');
+}
