@@ -2,9 +2,15 @@
 let myOrder = [];
 
 function parseCSV(text) {
-    const lines = text.split('\n').map(l => l.trim()).filter(l => l !== '');
+    // 使用正則表達式處理各種換行符號
+    const lines = text.split(/\r?\n/).map(l => l.trim()).filter(l => l !== '');
     if (lines.length === 0) return [];
     
+    // 處理可能的 UTF-8 BOM 標頭 (某些 Excel 存檔會產生)
+    if (lines[0].charCodeAt(0) === 0xFEFF) {
+        lines[0] = lines[0].substring(1);
+    }
+
     const headers = lines[0].split(',').map(h => h.trim());
     return lines.slice(1).map(line => {
         const values = line.split(',').map(v => v.trim());
